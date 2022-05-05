@@ -1,0 +1,9 @@
+node_modules
+.parcel-cache
+dist
+.env
+db.js
+.postcssrc.js
+babelrc.js
+
+package-lock.json
