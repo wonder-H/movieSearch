@@ -41,7 +41,7 @@ body {
       }
     }
 
-    .list-area {
+    .list-area ul {
       @include flex-box-center;
       align-items: flex-start;
       justify-content: flex-start;
@@ -78,6 +78,7 @@ body {
             font-size: 1.7em;
             font-weight: 900;
             word-wrap: break-word;
+
             margin: 0.5rem 0 1em;
           }
           div.img-box {

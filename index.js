@@ -1,6 +1,5 @@
 import axios from 'axios';
 import 'regenerator-runtime/runtime';
-// import qs from 'qs';
 
 const getData = axios.create({
   baseURL: 'https://www.omdbapi.com',
@@ -18,23 +17,24 @@ const searchData = {
 
 const fetchMovies = async (inputValue) => {
   try {
-    // console.log(post);
-    const { data } = await getData.get('/', { params: { s: inputValue } });
-    let { Error, Search, totalResults } = data;
+    await getData.get('/', { params: { s: inputValue } }).then(({ data }) => {
+      let { Error, Search, totalResults } = data;
+      console.log('error search total: ', Error, Search, totalResults);
+      // console.log('data : ', data);
+      if (Error !== undefined) {
+        showError(Error);
+      } else {
+        document.querySelector('header p').textContent = `${inputValue}관련 ${totalResults}개 찾음!!`;
 
-    if (Error !== undefined) {
-      showError(Error);
-      return;
-    } else {
-      document.querySelector('header p').innerText = `${inputValue}관련 ${totalResults}개 찾음!!`;
+        searchData.keyword = inputValue;
+        searchData.resultPage = totalResults;
+        searchData.currentPage = 10;
 
-      searchData.keyword = inputValue;
-      searchData.resultPage = totalResults;
-      searchData.currentPage = 10;
-
-      createLists(Search);
-    }
+        createLists(Search);
+      }
+    });
   } catch (res) {
+    console.log(res);
     alert('오류!!');
     return;
   }
@@ -53,6 +53,7 @@ const moreLists = async () => {
       createLists(Search);
     }
   } catch (res) {
+    console.log(res);
     alert('오류!!');
     return;
   }
@@ -73,39 +74,31 @@ function showError(Error) {
   console.log(Error);
   switch (Error) {
     case 'Too many results.':
-      alert('너무 많으니 검색 구체적으로 좀..');
+      alert('검색좀 구체적으로..');
       break;
     case 'Movie not found!':
-      alert('그 영화 못찾겠는디..');
+      alert('그 영화 못찾음 :( ');
     default:
       break;
   }
 }
 
 function createLists(data) {
+  const listEls = [];
+  const boxEl = document.querySelector('.list-area ul');
+
   data.forEach((list) => {
-    const boxEl = document.querySelector('.list-area');
-    if (list.Poster === 'N/A') {
-      list.Poster = 'https://firebasestorage.googleapis.com/v0/b/imgsources.appspot.com/o/not_found_poster.jpg?alt=media&token=e309cbe1-922a-48e6-bb0d-7880add97a63';
-    }
-    const listItem = `<li>
-    <div class="list-item">
-    <span>${list.Type}</span>
-    <p>${list.Year}</p>
-    <h4>${list.Title}</h4>
-    <div class="img-box">
-    <img src="${list.Poster}" alt="${list.Title}" />
-    </div>
-    </div>
-    </li>
-    `;
-    const newItemEl = document.createElement('ul');
-    newItemEl.classList.add(`${list.imdbID}`);
-    newItemEl.innerHTML = listItem;
-    //적용
-    boxEl.appendChild(newItemEl);
+    const listEl = document.createElement('li');
+    list.Poster === 'N/A'
+      ? (list.Poster = 'https://firebasestorage.googleapis.com/v0/b/imgsources.appspot.com/o/not_found_poster.jpg?alt=media&token=e309cbe1-922a-48e6-bb0d-7880add97a63')
+      : (listEl.innerHTML = `<div class="list-item"><span>${list.Type}</span><p>${list.Year}</p><h4>${list.Title}</h4><div class="img-box"><img src="${list.Poster}" alt="${list.Title}" /></div></div>`);
+    listEls.push(listEl);
+    // console.log(listEl, listEls);
   });
+
   if (searchData.resultPage > searchData.currentPage) {
+    //적용
+    boxEl.append(...listEls);
     moreBtnEl.classList.add('active');
   } else {
     moreBtnEl.classList.remove('active');
